@@ -369,23 +369,28 @@ input = """5 + (9 + (7 + 5 + 3 * 8 + 4 * 6) + 9 * 8 * 7)
 2 + ((2 * 5 + 4 + 8 + 3 * 7) + 3 + 3 + 6 * 3)
 9 + (2 * (5 + 3 + 2 + 9 + 2 + 3) * 7 * 4 + (8 * 2 + 7))"""
 
-# input = "1 + 2 * 3 + 4 * 5 + 6"
-# input = """1 + (2 * 3) + (4 * (5 + 6))"""
+input = """1 + (2 * 3) + (4 * (5 + 6))"""
 # input = """2 * 3 + (4 * 5)"""
-# input = """5 + (8 * 3 + 9 + 3 * 4 * 3)"""
-# input = """5 * 9 * (7 * 3 * 3 + 9 * 3 + (8 + 6 * 4))"""
 # input = """((2 + 4 * 9) * (6 + 9 * 8 + 6) + 6) + 2 + 4 * 2"""
-
 input = input.replace(' ', '')
 
 
 def calc(expr):
+    print(expr)
+    cur_num = None
+    cur_action = None
     i = 0
 
     while i < len(expr):
         c = expr[i]
 
         if str(c) in '0123456789':
+            if cur_num:
+                cur_num = eval("%s %s %s" % (cur_num, cur_action, c))
+
+            else:
+                cur_num = c
+
             i += 1
 
         elif c == '(':
@@ -404,29 +409,21 @@ def calc(expr):
                 j += 1
 
             sub_res = calc(expr[i+1:j - 1])
-            expr[i:j] = [sub_res]
-            i += 1
+
+            if cur_action:
+                cur_num = eval("%s %s %s" % (cur_num, cur_action, sub_res))
+            else:
+                cur_num = sub_res
+
+            i = j
 
         elif c in '*+':
+            cur_action = c
             i += 1
 
         else:
             import pdb;pdb.set_trace()
             raise Exception("Oh noes")
-
-    print(expr)
-    i = 0
-    # Do all the plusses:
-    while i < len(expr):
-        if expr[i] == '+':
-            expr[i-1:i+2] = [int(expr[i-1]) + int(expr[i+1])]
-            print(expr)
-            continue
-
-        i += 1
-
-    cur_num = eval("".join([str(i) for i in expr]))
-    print(expr, '=', cur_num)
 
     return cur_num
 
